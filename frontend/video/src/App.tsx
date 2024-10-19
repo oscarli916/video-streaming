@@ -44,6 +44,9 @@ function App() {
     peerConnection.ontrack = (event) => {
       console.log("receiving tracks");
       console.log(event.streams);
+      if (remoteVideoRef.current){
+        remoteVideoRef.current.srcObject = event.streams[0]
+      }
     };
 
     const getCameraStream = async () => {
