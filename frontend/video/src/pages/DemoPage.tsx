@@ -1,13 +1,17 @@
-import { Button, TextField } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
+import OfferField from "../components/demo/OfferField";
+import AnswerField from "../components/demo/AnswerField";
 
 const DemoPage = () => {
+  const [tabValue, setTabValue] = useState(0);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const [pc, setPc] = useState<RTCPeerConnection | null>(null);
   const [localSDP, setLocalSDP] = useState("");
   const [offerInput, setOfferInput] = useState("");
   const [answerInput, setAnswerInput] = useState("");
+  const [connected, setConnected] = useState(false);
 
   const createOffer = async () => {
     const offer = await pc?.createOffer();
@@ -17,7 +21,6 @@ const DemoPage = () => {
 
   const setOffer = async () => {
     await pc?.setRemoteDescription(JSON.parse(offerInput));
-    console.log("offer set");
   };
 
   const createAnswer = async () => {
@@ -33,15 +36,11 @@ const DemoPage = () => {
     const peerConnection = new RTCPeerConnection();
     setPc(peerConnection);
     peerConnection.onicecandidate = (event) => {
-      console.log(
-        `New Ice Candidate received. SDP: ${JSON.stringify(
-          peerConnection.localDescription
-        )}`
-      );
       setLocalSDP(JSON.stringify(peerConnection.localDescription));
     };
 
     peerConnection.ontrack = (event) => {
+      setConnected(true);
       console.log("receiving tracks");
       console.log(event.streams);
       if (remoteVideoRef.current) {
@@ -79,49 +78,59 @@ const DemoPage = () => {
   }, []);
 
   return (
-    <div className="md:w-[1000px] flex flex-col">
-      <div className="md:flex md:justify-between">
-        <video
-          className="bg-black w-[300px]"
-          ref={localVideoRef}
-          autoPlay
-          playsInline
-          muted
-        ></video>
-        <video
-          className="bg-black w-[300px]"
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-        ></video>
+    <div className="w-full flex flex-col gap-2">
+      <div className="md:flex md:justify-between gap-5">
+        <div className="flex flex-col w-full">
+          <p>Your camera:</p>
+          <video
+            className="bg-black w-full "
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+          ></video>
+        </div>
+        <div className="flex flex-col w-full">
+          <p>Others camera:</p>
+          <video
+            className="bg-black w-full"
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+          ></video>
+        </div>
       </div>
-      <div className="flex flex-col mt-10 gap-2">
-        <Button variant="contained" onClick={createOffer}>
-          Create Offer
-        </Button>
-        <TextField
-          label="SDP Offer"
-          multiline
-          value={offerInput}
-          onChange={(e) => setOfferInput(e.target.value)}
-        />
-        <Button variant="contained" onClick={setOffer}>
-          Set Offer
-        </Button>
-        <Button variant="contained" onClick={createAnswer}>
-          Create Answer
-        </Button>
-        <TextField
-          label="SDP Answer"
-          multiline
-          value={answerInput}
-          onChange={(e) => setAnswerInput(e.target.value)}
-        />
-        <Button variant="contained" onClick={setAnswer}>
-          Set Answer
-        </Button>
-        <p className="text-wrap">SDP: {localSDP}</p>
+      <div>
+        <p>Connected: {connected ? "ture" : "false"}</p>
       </div>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          variant="fullWidth"
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+        >
+          <Tab label="I'm an offer" />
+          <Tab label="I'm an answer" />
+        </Tabs>
+      </Box>
+      <OfferField
+        value={tabValue}
+        index={0}
+        createOffer={createOffer}
+        setAnswer={setAnswer}
+        localSDP={localSDP}
+        answerInput={answerInput}
+        setAnswerInput={setAnswerInput}
+      />
+      <AnswerField
+        value={tabValue}
+        index={1}
+        setOffer={setOffer}
+        offerInput={offerInput}
+        setOfferInput={setOfferInput}
+        createAnswer={createAnswer}
+        localSDP={localSDP}
+      />
     </div>
   );
 };
