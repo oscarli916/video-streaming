@@ -11,11 +11,9 @@ const DemoPage = () => {
   const [localSDP, setLocalSDP] = useState("");
   const [offerInput, setOfferInput] = useState("");
   const [answerInput, setAnswerInput] = useState("");
-  const [connected, setConnected] = useState(false);
 
   const createOffer = async () => {
     const offer = await pc?.createOffer();
-    console.log(`created offer: ${JSON.stringify(offer)}`);
     pc?.setLocalDescription(offer);
   };
 
@@ -40,9 +38,6 @@ const DemoPage = () => {
     };
 
     peerConnection.ontrack = (event) => {
-      setConnected(true);
-      console.log("receiving tracks");
-      console.log(event.streams);
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = event.streams[0];
       }
@@ -52,6 +47,7 @@ const DemoPage = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
+          audio: true,
         });
 
         if (localVideoRef.current) {
@@ -74,6 +70,7 @@ const DemoPage = () => {
         ).getTracks();
         tracks.forEach((track) => track.stop());
       }
+      peerConnection.close();
     };
   }, []);
 
@@ -101,7 +98,7 @@ const DemoPage = () => {
         </div>
       </div>
       <div>
-        <p>Connected: {connected ? "ture" : "false"}</p>
+        <p>Connected: {pc?.connectionState}</p>
       </div>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
