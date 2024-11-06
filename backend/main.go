@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
@@ -17,6 +18,7 @@ var upgrader = websocket.Upgrader{
 		return true // Accepting all requests
 	},
 }
+var mu sync.Mutex
 
 var AllRooms internal.TRoomMap
 
@@ -63,7 +65,9 @@ func broadcaster() {
 		for _, client := range AllRooms.Map[msg.id] {
 
 			if client.Conn != msg.client {
+				mu.Lock()
 				err := client.Conn.WriteJSON(msg.data)
+				mu.Unlock()
 				if err != nil {
 					log.Println("write error:", err)
 					return
