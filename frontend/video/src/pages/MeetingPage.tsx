@@ -189,7 +189,7 @@ const MeetingPage = () => {
         <div className="flex flex-col w-full">
           <p>Your camera:</p>
           <video
-            className="bg-black w-full "
+            className="bg-black w-full h-[400px]"
             ref={localVideoRef}
             autoPlay
             playsInline
@@ -199,7 +199,7 @@ const MeetingPage = () => {
         <div className="flex flex-col w-full">
           <p>Others camera:</p>
           <video
-            className="bg-black w-full"
+            className="bg-black w-full h-[400px]"
             ref={remoteVideoRef}
             autoPlay
             playsInline
