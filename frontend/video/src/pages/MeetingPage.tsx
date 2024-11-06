@@ -73,7 +73,7 @@ const MeetingPage = () => {
 
   const handleIceCandidate = async (iceCandidate: RTCIceCandidate) => {
     try {
-      console.log("sending ice candidate to others:", iceCandidate);
+      console.log("received ice candidate from others:", iceCandidate);
       await pcRef.current?.addIceCandidate(iceCandidate);
     } catch (err) {
       console.error("error while adding ice candidate:", err);
@@ -115,6 +115,7 @@ const MeetingPage = () => {
 
   const onTrack = (event: RTCTrackEvent) => {
     console.log("received others track:", event.streams);
+    console.log(event.streams[0].getTracks());
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = event.streams[0];
     }
@@ -129,6 +130,11 @@ const MeetingPage = () => {
             "stun:stun1.l.google.com:19302",
             "stun:stun2.l.google.com:19302",
           ],
+        },
+        {
+          urls: `turn:${process.env.REACT_APP_TURN_SERVER_IP}:${process.env.REACT_APP_TURN_SERVER_PORT}`,
+          username: process.env.REACT_APP_TURN_SERVER_USERNAME,
+          credential: process.env.REACT_APP_TURN_SERVER_PASSWORD,
         },
       ],
     });
